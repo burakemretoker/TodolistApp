@@ -9,42 +9,21 @@ import UIKit
 
 class TodoListViewController: UITableViewController {
 
-    var itemArray = [Item(name: "Messi", isCheckmarked: false),
-                     Item(name: "Mesasi", isCheckmarked: false),
-                     Item(name: "Mesdssi", isCheckmarked: false),
-                     Item(name: "Mesdffsi", isCheckmarked: false),
-                     Item(name: "Messddsi", isCheckmarked: false),
-                     Item(name: "Messasdfi", isCheckmarked: false),
-                     Item(name: "Mesadsfsi", isCheckmarked: false),
-                     Item(name: "Messdafsi", isCheckmarked: false),
-                     Item(name: "Mesasdfsi", isCheckmarked: false),
-                     Item(name: "Mesasdfsi", isCheckmarked: false),
-                     Item(name: "Mesadsfsi", isCheckmarked: false),
-                     Item(name: "Mesdafssi", isCheckmarked: false),
-    ]
+    var itemArray = [Item]()
     
-
-    
-    var checkmarkedArray: [String: Any] = [:]
-    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager
+        .default
+        .urls(for: .documentDirectory, in: .userDomainMask)
+        .first?
+        .appendingPathComponent("Items.plist")
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        print(dataFilePath!)
         // Do any additional setup after loading the view.
         navigationItem.title = "Todoey"
         navigationItem.rightBarButtonItem?.tintColor = .white
-        
-//        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-//            itemArray = items
-//        }
-        
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-            print("Hi")
-        }
-        
-        
+        loadItems()
     }
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -54,11 +33,8 @@ class TodoListViewController: UITableViewController {
             
             if let itemName = textField.text {
                 self.itemArray.append(Item(name: itemName, isCheckmarked: false))
-                self.defaults.set(self.itemArray, forKey: "TodoListArray")
-                self.tableView.reloadData()
-                print("➕ Item added.")
+                self.saveItems()
             }
-            
         }
         
         alert.addTextField { alertTextField in
@@ -107,7 +83,7 @@ extension TodoListViewController {
         
         // ⭐️ the code below is equal to if statement its below.
         item.isCheckmarked = !item.isCheckmarked
-        
+        saveItems()
 //        if item.isCheckmarked == false {
 //            item.isCheckmarked = true
 //        } else {
@@ -115,13 +91,40 @@ extension TodoListViewController {
 //        }
         
         print("2. \(item.name): \(item.isCheckmarked)")
-        tableView.reloadData()
         tableView.deselectRow(at: indexPath, animated: true)
-
-
-        
-        
     }
     
-  
+}
+
+//MARK: - Data Manipulation
+
+extension TodoListViewController {
+    
+    private func saveItems() {
+        let encoder = PropertyListEncoder()
+        do {
+            let data = try encoder.encode(itemArray)
+            try data.write(to: dataFilePath!)
+        } catch {
+            print(error.localizedDescription)
+        }
+        
+        self.tableView.reloadData()
+        print("➕ Item added.")
+    }
+    
+    private func loadItems() {
+        //The code above will work as do catch code blocks.
+        if let data = try? Data(contentsOf: dataFilePath!) {
+            let decoder = PropertyListDecoder()
+            do {
+                let decodedItems = try decoder.decode([Item].self, from: data)
+                itemArray = decodedItems
+            } catch {
+                print(error.localizedDescription)
+            }
+            
+        }
+        
+    }
 }

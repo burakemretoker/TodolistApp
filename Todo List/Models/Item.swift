@@ -8,7 +8,7 @@
 import Foundation
 import UIKit
 
-class Item {
+class Item: Codable {
     var name: String
     var isCheckmarked: Bool
     
