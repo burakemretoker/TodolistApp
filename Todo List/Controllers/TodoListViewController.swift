@@ -22,28 +22,19 @@ class TodoListViewController: UITableViewController {
                      Item(name: "Mesadsfsi", isCheckmarked: false),
                      Item(name: "Mesdafssi", isCheckmarked: false),
     ]
-    
 
-    
-    var checkmarkedArray: [String: Any] = [:]
-    let defaults = UserDefaults.standard
-    
     override func viewDidLoad() {
         super.viewDidLoad()
+        let dataFilePath = FileManager
+            .default
+            .urls(for: .documentDirectory, in: .userDomainMask)
+            .first?
+            .appendingPathComponent("Items.plist")
         
+        print(dataFilePath!)
         // Do any additional setup after loading the view.
         navigationItem.title = "Todoey"
         navigationItem.rightBarButtonItem?.tintColor = .white
-        
-//        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-//            itemArray = items
-//        }
-        
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-            print("Hi")
-        }
-        
         
     }
 
@@ -54,7 +45,13 @@ class TodoListViewController: UITableViewController {
             
             if let itemName = textField.text {
                 self.itemArray.append(Item(name: itemName, isCheckmarked: false))
-                self.defaults.set(self.itemArray, forKey: "TodoListArray")
+                
+                let encoder = PropertyListEncoder()
+                
+                do {
+                    let encode = try encoder.encode(self.itemArray)
+                }
+                
                 self.tableView.reloadData()
                 print("➕ Item added.")
             }
@@ -69,7 +66,7 @@ class TodoListViewController: UITableViewController {
         
         present(alert, animated: true)
     }
-    
+    git commit -m "Configure the changes."
 }
 
 //MARK: - TableView Data Source
