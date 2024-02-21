@@ -6,45 +6,38 @@
 //
 
 import UIKit
+import CoreData
 
 class TodoListViewController: UITableViewController {
-
-    var itemArray = [Item(name: "Messi", isCheckmarked: false),
-                     Item(name: "Mesasi", isCheckmarked: false),
-                     Item(name: "Mesdssi", isCheckmarked: false),
-                     Item(name: "Mesdffsi", isCheckmarked: false),
-                     Item(name: "Messddsi", isCheckmarked: false),
-                     Item(name: "Messasdfi", isCheckmarked: false),
-                     Item(name: "Mesadsfsi", isCheckmarked: false),
-                     Item(name: "Messdafsi", isCheckmarked: false),
-                     Item(name: "Mesasdfsi", isCheckmarked: false),
-                     Item(name: "Mesasdfsi", isCheckmarked: false),
-                     Item(name: "Mesadsfsi", isCheckmarked: false),
-                     Item(name: "Mesdafssi", isCheckmarked: false),
-    ]
     
-
+    private lazy var searchController: UISearchController = {
+        let sController = UISearchController(searchResultsController: nil)
+        sController.delegate = self
+        sController.searchResultsUpdater = self
+        sController.obscuresBackgroundDuringPresentation = false
+        sController.searchBar.placeholder = "Type a keyword..."
+        sController.searchBar.delegate = self
+        return sController
+    }()
     
-    var checkmarkedArray: [String: Any] = [:]
-    let defaults = UserDefaults.standard
+    var itemArray = [Item]()
+    
+    let dataFilePath = FileManager
+        .default
+        .urls(for: .documentDirectory, in: .userDomainMask)
+        .first?
+        .appendingPathComponent("Items.plist")
+    
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
-        // Do any additional setup after loading the view.
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = true
+        print(dataFilePath!)
         navigationItem.title = "Todoey"
         navigationItem.rightBarButtonItem?.tintColor = .white
-        
-//        if let items = defaults.array(forKey: "TodoListArray") as? [String] {
-//            itemArray = items
-//        }
-        
-        if let items = defaults.array(forKey: "TodoListArray") as? [Item] {
-            itemArray = items
-            print("Hi")
-        }
-        
-        
+        loadItems()
     }
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -52,13 +45,13 @@ class TodoListViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New Todoey Item", message: "", preferredStyle: .alert)
         let action = UIAlertAction(title: "Add Item", style: .default) { action in
             
-            if let itemName = textField.text {
-                self.itemArray.append(Item(name: itemName, isCheckmarked: false))
-                self.defaults.set(self.itemArray, forKey: "TodoListArray")
-                self.tableView.reloadData()
-                print("➕ Item added.")
+            if textField.text?.count != 0 {
+                let item = Item(context: self.context)
+                item.name = textField.text!
+                item.isCheckmarked = false
+                self.itemArray.append(item)
+                self.saveItems()
             }
-            
         }
         
         alert.addTextField { alertTextField in
@@ -66,7 +59,6 @@ class TodoListViewController: UITableViewController {
             textField = alertTextField
         }
         alert.addAction(action)
-        
         present(alert, animated: true)
     }
     
@@ -83,13 +75,6 @@ extension TodoListViewController {
         // Ternarry Operation in Swift
         // ⭐️ ⭐️ value = condition ? valueIfTrue : valueIfFalse
         cell.accessoryType = item.isCheckmarked == false ? .none : .checkmark
-        // The code below' equal form is the line just above.
-        
-//        if item.isCheckmarked == false {
-//            cell.accessoryType = .none
-//        } else {
-//            cell.accessoryType = .checkmark
-//        }
         return cell
     }
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -103,25 +88,71 @@ extension TodoListViewController {
 extension TodoListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let item =  itemArray[indexPath.row]
-        print("1. \(item.name): \(item.isCheckmarked)")
         
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
         // ⭐️ the code below is equal to if statement its below.
         item.isCheckmarked = !item.isCheckmarked
-        
-//        if item.isCheckmarked == false {
-//            item.isCheckmarked = true
-//        } else {
-//            item.isCheckmarked = false
-//        }
-        
-        print("2. \(item.name): \(item.isCheckmarked)")
-        tableView.reloadData()
+        saveItems()
         tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+}
 
+//MARK: - Data Manipulation
 
+extension TodoListViewController {
+    
+    private func saveItems() {
+        do {
+            try context.save()
+        } catch {
+            print(error.localizedDescription)
+        }
         
+        self.tableView.reloadData()
+        print("📁 DB saved.")
+    }
+    
+    private func loadItems(for request: NSFetchRequest<Item> =
+                           Item.fetchRequest()) {
+        do {
+            itemArray = try context.fetch(request)
+            tableView.reloadData()
+        } catch {
+            print("Encountered an error while trying to fetch data from CoreData as \"Error\": \(error.localizedDescription)")
+        }
+    }
+    
+}
+
+//MARK: - SearchBar Methods
+
+extension TodoListViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        if searchBar.text?.count == 0 {
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+        }
         
     }
     
-  
+}
+
+extension TodoListViewController: UISearchControllerDelegate, UISearchResultsUpdating {
+    
+    func updateSearchResults(for searchController: UISearchController) {
+        if searchController.searchBar.text!.count != 0 {
+            let request: NSFetchRequest<Item> = Item.fetchRequest()
+            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchController.searchBar.text!)
+            request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+            loadItems(for: request)
+            
+        } else {
+            loadItems()
+            
+        }
+    }
+    
 }
