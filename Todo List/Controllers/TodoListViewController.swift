@@ -20,6 +20,12 @@ class TodoListViewController: UITableViewController {
         return sController
     }()
     
+    var selectedCategory: Category? {
+        didSet {
+            loadItems()
+        }
+    }
+    
     var itemArray = [Item]()
     
     let dataFilePath = FileManager
@@ -35,9 +41,7 @@ class TodoListViewController: UITableViewController {
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = true
         print(dataFilePath!)
-        navigationItem.title = "Todoey"
         navigationItem.rightBarButtonItem?.tintColor = .white
-        loadItems()
     }
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -49,6 +53,7 @@ class TodoListViewController: UITableViewController {
                 let item = Item(context: self.context)
                 item.name = textField.text!
                 item.isCheckmarked = false
+                item.parentCategory = self.selectedCategory
                 self.itemArray.append(item)
                 self.saveItems()
             }
@@ -114,9 +119,13 @@ extension TodoListViewController {
         print("📁 DB saved.")
     }
     
-    private func loadItems(for request: NSFetchRequest<Item> =
-                           Item.fetchRequest()) {
+    // See predicate argument in that function? We implemented it much more succint than Angela did.
+    // But if the works becomes enormously hard, NSCompoundPredicate (The one Angela used) maybe is that much easy.
+    private func loadItems(for request: NSFetchRequest<Item> = Item.fetchRequest(),
+                           predicate: NSPredicate? = nil) {
         do {
+            var insidePredicate = predicate ?? NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+            request.predicate = insidePredicate
             itemArray = try context.fetch(request)
             tableView.reloadData()
         } catch {
@@ -132,6 +141,7 @@ extension TodoListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {
             DispatchQueue.main.async {
+                self.loadItems()
                 searchBar.resignFirstResponder()
             }
         }
@@ -145,13 +155,10 @@ extension TodoListViewController: UISearchControllerDelegate, UISearchResultsUpd
     func updateSearchResults(for searchController: UISearchController) {
         if searchController.searchBar.text!.count != 0 {
             let request: NSFetchRequest<Item> = Item.fetchRequest()
-            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchController.searchBar.text!)
+            let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchController.searchBar.text!)
+//            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchController.searchBar.text!)
             request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
             loadItems(for: request)
-            
-        } else {
-            loadItems()
-            
         }
     }
     
