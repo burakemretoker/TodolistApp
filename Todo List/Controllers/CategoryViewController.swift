@@ -123,7 +123,8 @@ extension CategoryViewController {
     }
     
     private func loadItems() {
-        categories = realm.objects(Category.self)
+        categories = realm.objects(Category.self).sorted(byKeyPath: "dateCreated", ascending: true)
+        tableView.reloadData()
     }
     
 }
@@ -133,20 +134,19 @@ extension CategoryViewController: UISearchResultsUpdating, UISearchControllerDel
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.count == 0 {
+            loadItems()
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()
-                self.loadItems()
             }
         }
     }
     
     func updateSearchResults(for searchController: UISearchController) {
-//        if let searchText = searchController.searchBar.text {
-//            let request: NSFetchRequest<Category> = Category.fetchRequest()
-//            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
-//            request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-//            loadItems(with: request)
-//        }
+        if searchController.searchBar.text!.count != 0 {
+            let searchText = searchController.searchBar.text!
+            categories = categories?.filter("name CONTAINS[cd] %@", searchText).sorted(byKeyPath: "dateCreated", ascending: true)
+            tableView.reloadData()
+        }
     }
     
 }
