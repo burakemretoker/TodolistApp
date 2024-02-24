@@ -36,6 +36,12 @@ class TodoListViewController: SwipeTableViewController {
         tableView.rowHeight = 50
     }
     
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        guard let navBar = navigationController?.navigationBar else { fatalError("Encountered an error trying to initialize navBar in TodoVC")}
+        title = selectedCategory!.name
+    }
+    
     //MARK: - SwipeTableVC Methods
     
     override func updateModel(at: IndexPath) {

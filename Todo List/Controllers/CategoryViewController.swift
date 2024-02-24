@@ -17,7 +17,7 @@ class CategoryViewController: SwipeTableViewController {
         searchController.searchResultsUpdater = self
         searchController.delegate = self
         searchController.searchBar.delegate = self
-        searchController.searchBar .placeholder = "Type Category to search.."
+        searchController.searchBar.placeholder = "Type Category to search.."
         
         return searchController
     }()
@@ -36,6 +36,17 @@ class CategoryViewController: SwipeTableViewController {
         navigationItem.rightBarButtonItem?.tintColor = UIColor(named: K.rightBarButtonColor)
         print(dataFilePath!)
         loadItems()
+        
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        
+        guard let navBar =  navigationController?.navigationBar else {
+            fatalError("There's been an error trying to initialize navigation bar.")
+        }
+        navigationItem.largeTitleDisplayMode = .always
+        navBar.prefersLargeTitles = true
     }
     
     //MARK: - SwipeTableVC Methods
