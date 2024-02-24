@@ -6,9 +6,17 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
-class TodoListViewController: UITableViewController {
+class TodoListViewController: SwipeTableViewController {
+
+    let realm = try! Realm()
+    var items: Results<Item>?
+    var selectedCategory: Category? {
+        didSet {
+            loadItems()
+        }
+    }
     
     private lazy var searchController: UISearchController = {
         let sController = UISearchController(searchResultsController: nil)
@@ -19,29 +27,28 @@ class TodoListViewController: UITableViewController {
         sController.searchBar.delegate = self
         return sController
     }()
-    
-    var selectedCategory: Category? {
-        didSet {
-            loadItems()
-        }
-    }
-    
-    var itemArray = [Item]()
-    
-    let dataFilePath = FileManager
-        .default
-        .urls(for: .documentDirectory, in: .userDomainMask)
-        .first?
-        .appendingPathComponent("Items.plist")
-    
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
-    
+
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.searchController = searchController
         navigationItem.hidesSearchBarWhenScrolling = true
-        print(dataFilePath!)
-        navigationItem.rightBarButtonItem?.tintColor = .white
+        navigationItem.rightBarButtonItem?.tintColor = UIColor(named: K.rightBarButtonColor)
+        tableView.rowHeight = 50
+    }
+    
+    //MARK: - SwipeTableVC Methods
+    
+    override func updateModel(at: IndexPath) {
+        guard let item = items?[at.row] else { return }
+        
+        do {
+            try realm.write {
+                realm.delete(item)
+                print("item is deleted")
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
     }
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -50,12 +57,25 @@ class TodoListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { action in
             
             if textField.text?.count != 0 {
-                let item = Item(context: self.context)
-                item.name = textField.text!
-                item.isCheckmarked = false
-                item.parentCategory = self.selectedCategory
-                self.itemArray.append(item)
-                self.saveItems()
+                guard self.selectedCategory != nil else {
+                    print("selectedCategory is founded by nil!")
+                    return
+                }
+                // ⭐️ Important things are around here. Watch out, we did save our appendings in here.
+                // check todolistVC saving.
+                
+                do {
+                    try self.realm.write {
+                        let item = Item()
+                        item.name = textField.text!
+                        self.selectedCategory!.items.append(item)
+                        self.tableView.reloadData()
+                        
+                    }
+                } catch {
+                    print(error.localizedDescription)
+                }
+
             }
         }
         
@@ -73,17 +93,17 @@ class TodoListViewController: UITableViewController {
 extension TodoListViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "TodoListCell", for: indexPath)
-        let item =  itemArray[indexPath.row]
-        cell.textLabel?.text = item.name
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        let item =  items?[indexPath.row]
+        cell.textLabel?.text = item?.name ?? "No items added yet."
         
         // Ternarry Operation in Swift
         // ⭐️ ⭐️ value = condition ? valueIfTrue : valueIfFalse
-        cell.accessoryType = item.isCheckmarked == false ? .none : .checkmark
+        cell.accessoryType = item?.isCheckmarked == false ? .none : .checkmark
         return cell
     }
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return itemArray.count
+        return items?.count ?? 1
     }
     
 }
@@ -92,13 +112,15 @@ extension TodoListViewController {
 
 extension TodoListViewController {
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let item =  itemArray[indexPath.row]
-        
-//        context.delete(itemArray[indexPath.row])
-//        itemArray.remove(at: indexPath.row)
-        // ⭐️ the code below is equal to if statement its below.
-        item.isCheckmarked = !item.isCheckmarked
-        saveItems()
+        guard let item = items?[indexPath.row] else { return }
+        do {
+            try realm.write {
+                item.isCheckmarked = !item.isCheckmarked
+                self.tableView.reloadData()
+            }
+        } catch {
+            print("Encountered error in didSelectRowAt as Error: \(error.localizedDescription) ")
+        }
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
@@ -108,29 +130,11 @@ extension TodoListViewController {
 
 extension TodoListViewController {
     
-    private func saveItems() {
-        do {
-            try context.save()
-        } catch {
-            print(error.localizedDescription)
-        }
-        
-        self.tableView.reloadData()
-        print("📁 DB saved.")
-    }
-    
     // See predicate argument in that function? We implemented it much more succint than Angela did.
     // But if the works becomes enormously hard, NSCompoundPredicate (The one Angela used) maybe is that much easy.
-    private func loadItems(for request: NSFetchRequest<Item> = Item.fetchRequest(),
-                           predicate: NSPredicate? = nil) {
-        do {
-            var insidePredicate = predicate ?? NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
-            request.predicate = insidePredicate
-            itemArray = try context.fetch(request)
-            tableView.reloadData()
-        } catch {
-            print("Encountered an error while trying to fetch data from CoreData as \"Error\": \(error.localizedDescription)")
-        }
+    private func loadItems() {
+        items = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: true)
+        tableView.reloadData()
     }
     
 }
@@ -140,8 +144,8 @@ extension TodoListViewController {
 extension TodoListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {
+            loadItems()
             DispatchQueue.main.async {
-                self.loadItems()
                 searchBar.resignFirstResponder()
             }
         }
@@ -153,13 +157,52 @@ extension TodoListViewController: UISearchBarDelegate {
 extension TodoListViewController: UISearchControllerDelegate, UISearchResultsUpdating {
     
     func updateSearchResults(for searchController: UISearchController) {
-        if searchController.searchBar.text!.count != 0 {
-            let request: NSFetchRequest<Item> = Item.fetchRequest()
-            let predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchController.searchBar.text!)
-//            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchController.searchBar.text!)
-            request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-            loadItems(for: request)
+        if searchController.searchBar.text?.count != 0 {
+            items = selectedCategory?.items.filter("name CONTAINS[cd] %@", searchController.searchBar.text!)
+                .sorted(byKeyPath: "dateCreated", ascending: true)
+            tableView.reloadData()
         }
     }
     
 }
+
+
+//MARK: - SwipeTableVC Delegate
+
+
+//extension TodoListViewController: SwipeTableViewCellDelegate {
+//    
+//    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
+//        guard orientation == .right else { return nil }
+//
+//        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+//            // handle action by updating model with deletion
+//            do {
+//                try self.realm.write {
+//                    if let item = self.items?[indexPath.row] {
+//                        self.realm.delete(item)
+//                        action.fulfill(with: .delete)
+//                        print("Ohh Item deleted.")
+//                    }
+//                }
+//            } catch {
+//                print(error.localizedDescription)
+//            }
+//            tableView.reloadData()
+//            
+//        }
+//
+//        // customize the action appearance
+//        deleteAction.image = UIImage(systemName: "trash")
+//
+//        return [deleteAction]
+//    }
+//    
+//    func tableView(_ tableView: UITableView, editActionsOptionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> SwipeOptions {
+//        var options = SwipeOptions()
+//        options.expansionStyle = .destructive
+//        return options
+//    }
+//
+//
+//}

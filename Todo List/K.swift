@@ -11,4 +11,5 @@ struct K {
     static let categoryCellIdentifier = "CategoryReusableCell"
     static let itemCellIdentifier = "TodoListCell"
     static let categoryToTodoIdentifier = "goToItems"
+    static let rightBarButtonColor = "rightBarButtonColor"
 }

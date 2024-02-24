@@ -6,9 +6,11 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
+    
+    let realm = try! Realm()
     
     private lazy var searchController: UISearchController = {
         let searchController = UISearchController(searchResultsController: nil)
@@ -25,30 +27,41 @@ class CategoryViewController: UITableViewController {
         .urls(for: .documentDirectory, in: .userDomainMask)
         .first?
         .appendingPathComponent("Items.plist")
-
-    let context = (UIApplication.shared.delegate as! AppDelegate)
-        .persistentContainer.viewContext
     
-    var categoryArray = [Category]()
+    var categories: Results<Category>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.searchController = searchController
-        navigationItem.rightBarButtonItem?.tintColor = .white
+        navigationItem.rightBarButtonItem?.tintColor = UIColor(named: K.rightBarButtonColor)
         print(dataFilePath!)
         loadItems()
     }
-
+    
+    //MARK: - SwipeTableVC Methods
+    override func updateModel(at: IndexPath) {
+        guard let category = categories?[at.row] else { return }
+        
+        do {
+            try realm.write {
+                realm.delete(category)
+                print("category is deleted")
+            }
+        } catch {
+            print(error.localizedDescription)
+        }
+    }
+    
+    
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         var categoryTextField = UITextField()
         let alertController = UIAlertController(title: "Add new category", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add Category", style: .default) { action in
             if categoryTextField.text!.count != 0 {
-                let category = Category(context: self.context)
+                let category = Category()
                 category.name = categoryTextField.text!
-                self.categoryArray.append(category)
-                self.saveCategory()
+                self.save(category: category)
             }
             
         }
@@ -70,12 +83,12 @@ class CategoryViewController: UITableViewController {
     }
 
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoryArray.count
+        return categories?.count ?? 1
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: K.categoryCellIdentifier, for: indexPath)
-        cell.textLabel!.text = categoryArray[indexPath.row].name
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        cell.textLabel!.text = categories?[indexPath.row].name ?? "No categories added yet."
         return cell
     }
     
@@ -90,7 +103,7 @@ class CategoryViewController: UITableViewController {
         let destinationVC = segue.destination as! TodoListViewController
         guard let indexPath = tableView.indexPathForSelectedRow else { return }
         
-        destinationVC.selectedCategory = categoryArray[indexPath.row]
+        destinationVC.selectedCategory = categories?[indexPath.row]
     }
 }
 
@@ -98,25 +111,19 @@ class CategoryViewController: UITableViewController {
 
 extension CategoryViewController {
     
-    private func saveCategory() {
+    private func save(category: Category) {
         do {
-            try context.save()
+            try realm.write {
+                realm.add(category)
+            }
             tableView.reloadData()
         } catch {
             print("Encountered an error when try to save \"category context\", Error: \(error.localizedDescription)")
         }
     }
     
-    private func loadItems(with reqeust: NSFetchRequest<Category>
-                           = Category.fetchRequest())
-    {
-        if let categories = try? context.fetch(reqeust) {
-            categoryArray = categories
-            tableView.reloadData()
-        } else {
-            print("Encountered an error when try to load \"category context\".")
-        }
-        
+    private func loadItems() {
+        categories = realm.objects(Category.self)
     }
     
 }
@@ -134,12 +141,12 @@ extension CategoryViewController: UISearchResultsUpdating, UISearchControllerDel
     }
     
     func updateSearchResults(for searchController: UISearchController) {
-        if let searchText = searchController.searchBar.text {
-            let request: NSFetchRequest<Category> = Category.fetchRequest()
-            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
-            request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
-            loadItems(with: request)
-        }
+//        if let searchText = searchController.searchBar.text {
+//            let request: NSFetchRequest<Category> = Category.fetchRequest()
+//            request.predicate = NSPredicate(format: "name CONTAINS[cd] %@", searchText)
+//            request.sortDescriptors = [NSSortDescriptor(key: "name", ascending: true)]
+//            loadItems(with: request)
+//        }
     }
     
 }

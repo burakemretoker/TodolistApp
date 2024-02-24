@@ -8,7 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		DD1356E62B87AB5700A86ABF /* K.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD1356E52B87AB5700A86ABF /* K.swift */; };
-		DD49EBE42B863BC1001E5583 /* DataModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = DD49EBE22B863BC1001E5583 /* DataModel.xcdatamodeld */; };
+		DD233BAC2B8A17630040C961 /* Pods_Todo_List.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42DB6B7AE7D7FCFB0B8DEC43 /* Pods_Todo_List.framework */; };
+		DD233BB02B8A19230040C961 /* SwipeTableViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD233BAF2B8A19230040C961 /* SwipeTableViewController.swift */; };
+		DD5A13182B88C2B400DFED7C /* Item.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5A13172B88C2B400DFED7C /* Item.swift */; };
+		DD5A131A2B88C2BE00DFED7C /* Category.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD5A13192B88C2BE00DFED7C /* Category.swift */; };
 		DD7B87F52B8364E600A05275 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7B87F42B8364E600A05275 /* AppDelegate.swift */; };
 		DD7B87F72B8364E600A05275 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7B87F62B8364E600A05275 /* SceneDelegate.swift */; };
 		DD7B87F92B8364E600A05275 /* TodoListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD7B87F82B8364E600A05275 /* TodoListViewController.swift */; };
@@ -19,8 +22,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2775EFF57891DBCBF865ECBD /* Pods-Todo List.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Todo List.release.xcconfig"; path = "Target Support Files/Pods-Todo List/Pods-Todo List.release.xcconfig"; sourceTree = "<group>"; };
+		42DB6B7AE7D7FCFB0B8DEC43 /* Pods_Todo_List.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Todo_List.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		D7B28E0432E9FD2C031AFC4F /* Pods-Todo List.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Todo List.debug.xcconfig"; path = "Target Support Files/Pods-Todo List/Pods-Todo List.debug.xcconfig"; sourceTree = "<group>"; };
 		DD1356E52B87AB5700A86ABF /* K.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = K.swift; sourceTree = "<group>"; };
-		DD49EBE32B863BC1001E5583 /* DataModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DataModel.xcdatamodel; sourceTree = "<group>"; };
+		DD233BAF2B8A19230040C961 /* SwipeTableViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwipeTableViewController.swift; sourceTree = "<group>"; };
+		DD5A13172B88C2B400DFED7C /* Item.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Item.swift; sourceTree = "<group>"; };
+		DD5A13192B88C2BE00DFED7C /* Category.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Category.swift; sourceTree = "<group>"; };
 		DD7B87F12B8364E600A05275 /* Todo List.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Todo List.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		DD7B87F42B8364E600A05275 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		DD7B87F62B8364E600A05275 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -37,16 +45,27 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DD233BAC2B8A17630040C961 /* Pods_Todo_List.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8F9EC7825591AB6D1B1580E2 /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				D7B28E0432E9FD2C031AFC4F /* Pods-Todo List.debug.xcconfig */,
+				2775EFF57891DBCBF865ECBD /* Pods-Todo List.release.xcconfig */,
+			);
+			path = Pods;
+			sourceTree = "<group>";
+		};
 		DD6DB2F12B84BBB40037D54A /* Models */ = {
 			isa = PBXGroup;
 			children = (
-				DD49EBE22B863BC1001E5583 /* DataModel.xcdatamodeld */,
+				DD5A13192B88C2BE00DFED7C /* Category.swift */,
+				DD5A13172B88C2B400DFED7C /* Item.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -54,8 +73,9 @@
 		DD6DB2F22B84BBBF0037D54A /* Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				DD7B87F82B8364E600A05275 /* TodoListViewController.swift */,
 				DDD8D58A2B87A1D90059F2DD /* CategoryViewController.swift */,
+				DD7B87F82B8364E600A05275 /* TodoListViewController.swift */,
+				DD233BAF2B8A19230040C961 /* SwipeTableViewController.swift */,
 			);
 			path = Controllers;
 			sourceTree = "<group>";
@@ -82,6 +102,8 @@
 			children = (
 				DD7B87F32B8364E600A05275 /* Todo List */,
 				DD7B87F22B8364E600A05275 /* Products */,
+				8F9EC7825591AB6D1B1580E2 /* Pods */,
+				E20A2BBF647173B95FC1A6A6 /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +130,14 @@
 			path = "Todo List";
 			sourceTree = "<group>";
 		};
+		E20A2BBF647173B95FC1A6A6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				42DB6B7AE7D7FCFB0B8DEC43 /* Pods_Todo_List.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -115,15 +145,19 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = DD7B88052B8364E800A05275 /* Build configuration list for PBXNativeTarget "Todo List" */;
 			buildPhases = (
+				830002FD677D74BF9FA997CD /* [CP] Check Pods Manifest.lock */,
 				DD7B87ED2B8364E600A05275 /* Sources */,
 				DD7B87EE2B8364E600A05275 /* Frameworks */,
 				DD7B87EF2B8364E600A05275 /* Resources */,
+				A6F0AE61AF99C99EED877D45 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 			);
 			name = "Todo List";
+			packageProductDependencies = (
+			);
 			productName = "Todo List";
 			productReference = DD7B87F12B8364E600A05275 /* Todo List.app */;
 			productType = "com.apple.product-type.application";
@@ -152,6 +186,9 @@
 				Base,
 			);
 			mainGroup = DD7B87E82B8364E600A05275;
+			packageReferences = (
+				DD233BA92B8A07F10040C961 /* XCRemoteSwiftPackageReference "SwipeCellKit" */,
+			);
 			productRefGroup = DD7B87F22B8364E600A05275 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -174,17 +211,61 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		830002FD677D74BF9FA997CD /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-Todo List-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
+			showEnvVarsInLog = 0;
+		};
+		A6F0AE61AF99C99EED877D45 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Todo List/Pods-Todo List-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputFileListPaths = (
+				"${PODS_ROOT}/Target Support Files/Pods-Todo List/Pods-Todo List-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-Todo List/Pods-Todo List-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		DD7B87ED2B8364E600A05275 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				DDD8D58B2B87A1D90059F2DD /* CategoryViewController.swift in Sources */,
-				DD49EBE42B863BC1001E5583 /* DataModel.xcdatamodeld in Sources */,
 				DD7B87F92B8364E600A05275 /* TodoListViewController.swift in Sources */,
 				DD1356E62B87AB5700A86ABF /* K.swift in Sources */,
 				DD7B87F52B8364E600A05275 /* AppDelegate.swift in Sources */,
+				DD5A13182B88C2B400DFED7C /* Item.swift in Sources */,
+				DD233BB02B8A19230040C961 /* SwipeTableViewController.swift in Sources */,
 				DD7B87F72B8364E600A05275 /* SceneDelegate.swift in Sources */,
+				DD5A131A2B88C2BE00DFED7C /* Category.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -247,7 +328,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -310,7 +391,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -331,6 +412,7 @@
 		};
 		DD7B88062B8364E800A05275 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = D7B28E0432E9FD2C031AFC4F /* Pods-Todo List.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -342,8 +424,9 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -360,6 +443,7 @@
 		};
 		DD7B88072B8364E800A05275 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2775EFF57891DBCBF865ECBD /* Pods-Todo List.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -371,8 +455,9 @@
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UIStatusBarHidden = NO;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = UIInterfaceOrientationPortrait;
 				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -410,18 +495,16 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCVersionGroup section */
-		DD49EBE22B863BC1001E5583 /* DataModel.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				DD49EBE32B863BC1001E5583 /* DataModel.xcdatamodel */,
-			);
-			currentVersion = DD49EBE32B863BC1001E5583 /* DataModel.xcdatamodel */;
-			path = DataModel.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
+/* Begin XCRemoteSwiftPackageReference section */
+		DD233BA92B8A07F10040C961 /* XCRemoteSwiftPackageReference "SwipeCellKit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/SwipeCellKit/SwipeCellKit.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.7.1;
+			};
 		};
-/* End XCVersionGroup section */
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = DD7B87E92B8364E600A05275 /* Project object */;
 }
