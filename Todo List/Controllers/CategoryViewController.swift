@@ -7,9 +7,11 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
 
-class CategoryViewController: SwipeTableViewController {
+class CategoryViewController: UIViewController {
     
+    @IBOutlet weak var tableView: UITableView!
     let realm = try! Realm()
     
     private lazy var searchController: UISearchController = {
@@ -22,36 +24,19 @@ class CategoryViewController: SwipeTableViewController {
         return searchController
     }()
     
-    let dataFilePath = FileManager
-        .default
-        .urls(for: .documentDirectory, in: .userDomainMask)
-        .first?
-        .appendingPathComponent("Items.plist")
-    
     var categories: Results<Category>?
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.searchController = searchController
-        navigationItem.rightBarButtonItem?.tintColor = UIColor(named: K.rightBarButtonColor)
-        print(dataFilePath!)
+        view.backgroundColor = UIColor(named: K.backgroundColor)
+        tableViewMethods()
         loadItems()
     }
     
-    //MARK: - SwipeTableVC Methods
-    override func updateModel(at: IndexPath) {
-        guard let category = categories?[at.row] else { return }
-        
-        do {
-            try realm.write {
-                realm.delete(category)
-                print("category is deleted")
-            }
-        } catch {
-            print(error.localizedDescription)
-        }
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navBarMethods()
     }
-    
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         var categoryTextField = UITextField()
@@ -76,26 +61,62 @@ class CategoryViewController: SwipeTableViewController {
         present(alertController, animated: true)
     }
     
-    // MARK: - Table view data source
+    private func tableViewMethods() {
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.layer.cornerRadius = 20
+        tableView.separatorStyle = .singleLine
+        tableView.separatorColor = UIColor(named: K.seperatorColorTV)
+        tableView.tintColor = UIColor(named: K.seperatorColorTV)
+        
+    }
+    
+    private func navBarMethods() {
+        guard let navBar = navigationController?.navigationBar else { fatalError("navigationBar is founded to be nil.")}
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.shadowColor = .clear
+        navBarAppearance.backgroundColor = UIColor(named: K.backgroundColor)
+        navigationController?.navigationBar.standardAppearance = navBarAppearance
+        navigationController?.navigationBar.scrollEdgeAppearance = navBarAppearance
+        navBar.prefersLargeTitles = true
+    }
+    
+    private func navItemMethods() {
+        navigationItem.searchController = searchController
+        navigationItem.rightBarButtonItem?.tintColor = UIColor(named: K.rightBarButtonColor)
+    }
+    
+}
 
-    override func numberOfSections(in tableView: UITableView) -> Int {
+// MARK: - Table View Data Source
+
+extension CategoryViewController: UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
         return 1
     }
 
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return categories?.count ?? 1
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: K.categoryCellIdentifier, for: indexPath) as! SwipeTableViewCell
+        cell.delegate = self
         cell.textLabel!.text = categories?[indexPath.row].name ?? "No categories added yet."
+        cell.backgroundColor = UIColor(named: K.tableViewColor)
+        cell.alpha = 0.5
         return cell
     }
-    
-    //MARK: - Table View Delegates
-    
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+}
+
+//MARK: - Table View Delegate
+
+extension CategoryViewController: UITableViewDelegate {
+   
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         performSegue(withIdentifier: K.categoryToTodoIdentifier, sender: self)
+        tableView.deselectRow(at: indexPath, animated: true)
     }
 
     
@@ -107,7 +128,7 @@ class CategoryViewController: SwipeTableViewController {
     }
 }
 
-//MARK: - CoreData Methods
+//MARK: - Realm Data Manipulation
 
 extension CategoryViewController {
     
@@ -135,6 +156,7 @@ extension CategoryViewController: UISearchResultsUpdating, UISearchControllerDel
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchText.count == 0 {
             loadItems()
+            tableView.reloadData()
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()
             }
@@ -150,3 +172,35 @@ extension CategoryViewController: UISearchResultsUpdating, UISearchControllerDel
     }
     
 }
+
+extension CategoryViewController: SwipeTableViewCellDelegate {
+    
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
+        guard orientation == .right else { return nil }
+
+        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+            // handle action by updating model with deletion
+            guard let category = self.categories?[indexPath.row] else { return }
+            do {
+                try self.realm.write {
+                    self.realm.delete(category)
+                    print("category is deleted")
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+
+        // customize the action appearance
+        deleteAction.image = UIImage(systemName: "trash")
+
+        return [deleteAction]
+    }
+    
+    func tableView(_ tableView: UITableView, editActionsOptionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> SwipeOptions {
+        var options = SwipeOptions()
+        options.expansionStyle = .destructive
+        return options
+    }
+}
+

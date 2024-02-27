@@ -7,9 +7,11 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
 
-class TodoListViewController: SwipeTableViewController {
-
+class TodoListViewController: UIViewController {
+    
+    @IBOutlet weak var tableView: UITableView!
     let realm = try! Realm()
     var items: Results<Item>?
     var selectedCategory: Category? {
@@ -30,31 +32,23 @@ class TodoListViewController: SwipeTableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        navigationItem.searchController = searchController
-        navigationItem.hidesSearchBarWhenScrolling = true
-        navigationItem.rightBarButtonItem?.tintColor = UIColor(named: K.rightBarButtonColor)
-        tableView.rowHeight = 50
+        view.backgroundColor = UIColor(named: K.backgroundColor)
+        navBarMethods()
+        tableViewMethods()
+        
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        guard let navBar = navigationController?.navigationBar else { fatalError("Encountered an error trying to initialize navBar in TodoVC")}
-        title = selectedCategory!.name
+        navItemMethods()
     }
     
-    //MARK: - SwipeTableVC Methods
-    
-    override func updateModel(at: IndexPath) {
-        guard let item = items?[at.row] else { return }
-        
-        do {
-            try realm.write {
-                realm.delete(item)
-                print("item is deleted")
-            }
-        } catch {
-            print(error.localizedDescription)
-        }
+    override func willMove(toParent parent: UIViewController?) {
+        super.willMove(toParent: parent)
+           if parent == nil
+           {
+               print("This VC is 'will' be popped. i.e. the back button was pressed.")
+           }
     }
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -93,22 +87,58 @@ class TodoListViewController: SwipeTableViewController {
         present(alert, animated: true)
     }
     
+    private func loadItems() {
+        items = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: true)
+    }
+    
+    private func navBarMethods() {
+        guard (navigationController?.navigationBar) != nil else { fatalError("Encountered an error trying to initialize navBar in TodoVC")}
+        navigationController?.navigationBar.isTranslucent = true
+        guard let navBar = navigationController?.navigationBar else { fatalError("navigationBar is founded to be nil.")}
+        let navBarAppearance = UINavigationBarAppearance()
+        navBarAppearance.shadowColor = .clear
+        navBarAppearance.backgroundColor = UIColor(named: K.backgroundColor)
+        navigationController?.navigationBar.standardAppearance = navBarAppearance
+        navigationController?.navigationBar.scrollEdgeAppearance = navBarAppearance
+        navBar.prefersLargeTitles = true
+        title = selectedCategory!.name
+    }
+    
+    private func navItemMethods() {
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = true
+        navigationItem.rightBarButtonItem?.tintColor = UIColor(named: K.rightBarButtonColor)
+    }
+    
+    private func tableViewMethods() {
+        tableView.delegate = self
+        tableView.dataSource = self
+        tableView.rowHeight = 50
+        tableView.layer.cornerRadius = 20
+        tableView.separatorColor = UIColor(named: K.seperatorColorTV)
+        tableView.tintColor = UIColor(named: K.seperatorColorTV)
+    }
+    
 }
 
 //MARK: - TableView Data Source
-extension TodoListViewController {
+extension TodoListViewController: UITableViewDataSource {
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: K.itemCellIdentifier, for: indexPath) as! SwipeTableViewCell
+        cell.delegate = self
         let item =  items?[indexPath.row]
         cell.textLabel?.text = item?.name ?? "No items added yet."
         
         // Ternarry Operation in Swift
         // ⭐️ ⭐️ value = condition ? valueIfTrue : valueIfFalse
         cell.accessoryType = item?.isCheckmarked == false ? .none : .checkmark
+        cell.backgroundColor = UIColor(named: K.tableViewColor)
+        cell.alpha = 0.5
         return cell
     }
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return items?.count ?? 1
     }
     
@@ -116,8 +146,9 @@ extension TodoListViewController {
 
 //MARK: - TableView Delegate
 
-extension TodoListViewController {
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+extension TodoListViewController: UITableViewDelegate {
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         guard let item = items?[indexPath.row] else { return }
         do {
             try realm.write {
@@ -132,25 +163,13 @@ extension TodoListViewController {
     
 }
 
-//MARK: - Data Manipulation
-
-extension TodoListViewController {
-    
-    // See predicate argument in that function? We implemented it much more succint than Angela did.
-    // But if the works becomes enormously hard, NSCompoundPredicate (The one Angela used) maybe is that much easy.
-    private func loadItems() {
-        items = selectedCategory?.items.sorted(byKeyPath: "dateCreated", ascending: true)
-        tableView.reloadData()
-    }
-    
-}
-
 //MARK: - SearchBar Methods
 
 extension TodoListViewController: UISearchBarDelegate {
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
         if searchBar.text?.count == 0 {
             loadItems()
+            tableView.reloadData()
             DispatchQueue.main.async {
                 searchBar.resignFirstResponder()
             }
@@ -172,3 +191,33 @@ extension TodoListViewController: UISearchControllerDelegate, UISearchResultsUpd
     
 }
 
+extension TodoListViewController: SwipeTableViewCellDelegate {
+    
+    func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> [SwipeAction]? {
+        guard orientation == .right else { return nil }
+        
+        let deleteAction = SwipeAction(style: .destructive, title: "Delete") { action, indexPath in
+            // handle action by updating model with deletion
+            guard let item = self.selectedCategory?.items[indexPath.row] else { return }
+            do {
+                try self.realm.write {
+                    self.realm.delete(item)
+                    print("category is deleted")
+                }
+            } catch {
+                print(error.localizedDescription)
+            }
+        }
+        
+        // customize the action appearance
+        deleteAction.image = UIImage(systemName: "trash")
+        
+        return [deleteAction]
+    }
+    
+    func tableView(_ tableView: UITableView, editActionsOptionsForRowAt indexPath: IndexPath, for orientation: SwipeActionsOrientation) -> SwipeOptions {
+        var options = SwipeOptions()
+        options.expansionStyle = .destructive
+        return options
+    }
+}

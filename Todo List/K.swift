@@ -12,4 +12,7 @@ struct K {
     static let itemCellIdentifier = "TodoListCell"
     static let categoryToTodoIdentifier = "goToItems"
     static let rightBarButtonColor = "rightBarButtonColor"
+    static let backgroundColor = "backgroundColor"
+    static let tableViewColor = "tableViewColor"
+    static let seperatorColorTV = "tableViewSeperatorColor"
 }
