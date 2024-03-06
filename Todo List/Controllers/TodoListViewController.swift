@@ -117,6 +117,8 @@ class TodoListViewController: UIViewController {
         tableView.layer.cornerRadius = 20
         tableView.separatorColor = UIColor(named: K.seperatorColorTV)
         tableView.tintColor = UIColor(named: K.seperatorColorTV)
+        tableView.tableHeaderView = UIView()
+        tableView.tableFooterView = UIView()
     }
     
 }

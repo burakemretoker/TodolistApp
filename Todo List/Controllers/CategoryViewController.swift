@@ -68,6 +68,10 @@ class CategoryViewController: UIViewController {
         tableView.separatorStyle = .singleLine
         tableView.separatorColor = UIColor(named: K.seperatorColorTV)
         tableView.tintColor = UIColor(named: K.seperatorColorTV)
+        tableView.tableHeaderView = UIView(frame: CGRect.zero)
+        tableView.tableFooterView = UIView(frame: CGRect.zero)
+
+        
         
     }
     
@@ -78,6 +82,7 @@ class CategoryViewController: UIViewController {
         navBarAppearance.backgroundColor = UIColor(named: K.backgroundColor)
         navigationController?.navigationBar.standardAppearance = navBarAppearance
         navigationController?.navigationBar.scrollEdgeAppearance = navBarAppearance
+        navigationController?.navigationBar.tintColor = UIColor(named: K.rightBarButtonColor)
         navBar.prefersLargeTitles = true
     }
     
