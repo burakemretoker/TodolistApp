@@ -18,13 +18,19 @@ This Todo List app is a simple, intuitive, and efficient way to keep track of yo
 ## Installation
 To set up the app on your local machine:
 1. Clone the repository to your local machine:
-- git clone https://github.com/yourusername/todolistapp.git
 
-2. Open the project in Xcode:
-- open todolistapp.xcodeproj
+```
+git clone https://github.com/yourusername/todolistapp.git
+```
+
+3. Open the project in Xcode:
+   
+```
+open todolistapp.xcodeproj
+```
 
 
-3. Run the app in the simulator or on a real device.
+4. Run the app in the simulator or on a real device.
 
 ## Usage
 Simply launch the app, and tap the "+" icon to add a new task. Swipe on a task to delete it, or tap it to mark as completed.
